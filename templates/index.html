@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WotC D&D Book Releases & News</title>
+    <meta name="description" content="Sleek and interactive dashboard for tracking upcoming Wizards of the Coast D&D books and tabletop news.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="logo-glow"></div>
+                <i class="fa-solid fa-dice-d20 brand-icon"></i>
+                <div class="brand-text">
+                    <h1>D&D Book Release Pulse</h1>
+                    <span class="sub-brand">WotC Upcoming Releases & News</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="status-badge" id="last-updated-badge">
+                    <span class="status-dot green"></span>
+                    <span class="status-text">Loading catalog...</span>
+                </div>
+                <button class="btn btn-primary btn-refresh" id="btn-refresh" aria-label="Refresh Roadmap">
+                    <i class="fa-solid fa-arrows-rotate refresh-icon"></i>
+                    <span>Sync</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Feed Section -->
+            <section class="feed-section">
+                <!-- Filter bar -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-input" placeholder="Search books, seasons, or news (e.g. Ravenloft, Magic, Stat Blocks)..." aria-label="Search catalog">
+                        <button class="clear-search" id="clear-search" style="display: none;" aria-label="Clear search">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="filter-options">
+                        <div class="category-filters" id="category-filters">
+                            <button class="filter-btn active" data-category="all">All</button>
+                            <button class="filter-btn" data-category="Core Rulebook">
+                                <span class="dot dot-core"></span>Core Rules
+                            </button>
+                            <button class="filter-btn" data-category="Sourcebook">
+                                <span class="dot dot-source"></span>Sourcebooks
+                            </button>
+                            <button class="filter-btn" data-category="Adventure">
+                                <span class="dot dot-adventure"></span>Adventures
+                            </button>
+                            <button class="filter-btn" data-category="Accessory">
+                                <span class="dot dot-accessory"></span>Accessories
+                            </button>
+                            <button class="filter-btn" data-category="News Update">
+                                <span class="dot dot-news"></span>News
+                            </button>
+                        </div>
+
+                        <div class="sort-box">
+                            <label for="sort-select" class="sr-only">Sort Order</label>
+                            <select id="sort-select" aria-label="Sort releases">
+                                <option value="latest">Release Date (Newest)</option>
+                                <option value="oldest">Release Date (Oldest)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feed Stats -->
+                <div class="feed-stats" id="feed-stats" style="display: none;">
+                    Showing <span id="visible-count">0</span> of <span id="total-count">0</span> releases
+                </div>
+
+                <!-- Updates List -->
+                <div class="updates-list" id="updates-list">
+                    <!-- Skeleton loaders (initial state) -->
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="empty-state" style="display: none;">
+                    <i class="fa-solid fa-dragon empty-icon"></i>
+                    <h2>No books or news found</h2>
+                    <p>Try adjusting your search query or filters to find releases.</p>
+                    <button class="btn btn-secondary" id="btn-reset-filters">Reset Filters</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- Slide-out Tweet Composer Drawer -->
+        <div class="drawer-backdrop" id="drawer-backdrop"></div>
+        <aside class="drawer" id="tweet-drawer" aria-labelledby="drawer-title">
+            <div class="drawer-header">
+                <h2 id="drawer-title"><i class="fa-brands fa-x-twitter drawer-title-icon"></i> Tabletop Composer</h2>
+                <button class="drawer-close" id="btn-close-drawer" aria-label="Close drawer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="drawer-content" id="drawer-content">
+                <!-- Update preview (selected) -->
+                <div class="selected-update-preview">
+                    <div class="preview-meta">
+                        <span class="preview-badge" id="preview-type-badge">Sourcebook</span>
+                        <span class="preview-date" id="preview-date">June 16, 2026</span>
+                    </div>
+                    <div class="preview-body" id="preview-body-html">
+                        <!-- Content will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Composer Controls -->
+                <div class="composer-options">
+                    <h3>Tweet Options</h3>
+                    <div class="option-toggles">
+                        <label class="toggle-control">
+                            <input type="checkbox" id="toggle-link" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Include official link</span>
+                        </label>
+                        <label class="toggle-control">
+                            <input type="checkbox" id="toggle-hashtags" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Include hashtags (#DnD)</span>
+                        </label>
+                        <label class="toggle-control">
+                            <input type="checkbox" id="toggle-emoji" checked>
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label">Include RPG emojis (🎲, 🐉)</span>
+                        </label>
+                    </div>
+                    
+                    <div class="quick-templates">
+                        <span class="templates-label">Style:</span>
+                        <button class="btn-pill active" data-style="pro">Hype Bard</button>
+                        <button class="btn-pill" data-style="casual">Casual Player</button>
+                        <button class="btn-pill" data-style="minimal">Short Scroll</button>
+                    </div>
+                </div>
+
+                <!-- Textarea for Tweet editing -->
+                <div class="tweet-box-container">
+                    <div class="tweet-box-header">
+                        <span>Drafting scrolls for X / Twitter</span>
+                        <span class="char-count" id="tweet-char-count">0 / 280</span>
+                    </div>
+                    <textarea id="tweet-textarea" rows="6" placeholder="Summoning your message..."></textarea>
+                    <div class="char-warning" id="char-warning" style="display: none;">
+                        <i class="fa-solid fa-circle-exclamation"></i> Scroll exceeds Twitter's 280-char page limit.
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="drawer-actions">
+                    <button class="btn btn-secondary" id="btn-copy-tweet">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy Draft</span>
+                    </button>
+                    <button class="btn btn-primary btn-tweet" id="btn-send-tweet">
+                        <i class="fa-brands fa-x-twitter"></i>
+                        <span>Post on X / Tweet</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Toasts Container -->
+        <div class="toast-container" id="toast-container"></div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
