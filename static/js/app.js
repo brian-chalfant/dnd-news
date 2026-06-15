@@ -31,6 +31,10 @@ const elements = {
     visibleCount: document.getElementById('visible-count'),
     totalCount: document.getElementById('total-count'),
     
+    // Theme toggle and Export
+    themeToggle: document.getElementById('theme-toggle'),
+    btnExportCSV: document.getElementById('btn-export-csv'),
+    
     // Drawer Elements
     tweetDrawer: document.getElementById('tweet-drawer'),
     drawerBackdrop: document.getElementById('drawer-backdrop'),
@@ -56,6 +60,7 @@ const elements = {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+    setupTheme();
     fetchUpdates(false);
     setupEventListeners();
 });
@@ -140,6 +145,7 @@ function setupEventListeners() {
     // Actions
     elements.btnCopyTweet.addEventListener('click', copyTweetToClipboard);
     elements.btnSendTweet.addEventListener('click', sendTweet);
+    elements.btnExportCSV.addEventListener('click', exportToCSV);
 }
 
 // Show clear search button when search is not empty
@@ -356,15 +362,32 @@ function renderUpdates(updates) {
                         Details <i class="fa-solid fa-arrow-up-right-from-square"></i>
                     </a>
                 ` : '<span></span>'}
-                <button class="btn-select-tweet">
-                    <i class="fa-brands fa-x-twitter"></i>
-                    <span>Share Release</span>
-                </button>
+                <div class="card-buttons">
+                    <button class="btn-card-action btn-copy-desc" title="Copy description">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                    <button class="btn-select-tweet">
+                        <i class="fa-brands fa-x-twitter"></i>
+                        <span>Share Release</span>
+                    </button>
+                </div>
             </div>
         `;
         
+        // Copy description click listener
+        const copyDescBtn = card.querySelector('.btn-copy-desc');
+        copyDescBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Avoid triggering card selection drawer open
+            navigator.clipboard.writeText(update.content_text).then(() => {
+                showToast('Description copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Failed to copy description: ', err);
+                showToast('Failed to copy description', 'error');
+            });
+        });
+        
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.card-link')) return;
+            if (e.target.closest('.card-link') || e.target.closest('.btn-copy-desc')) return;
             selectUpdate(update);
         });
         
@@ -593,4 +616,70 @@ function showToast(message, type = 'success') {
     setTimeout(() => {
         toast.remove();
     }, 3000);
+}
+
+// Theme Management (Light / Dark Mode switcher)
+function setupTheme() {
+    if (!elements.themeToggle) return;
+    
+    // Check local storage for preference
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'light') {
+        document.body.classList.add('light-mode');
+        const icon = elements.themeToggle.querySelector('i');
+        if (icon) icon.className = 'fa-solid fa-sun';
+    }
+    
+    elements.themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        const icon = elements.themeToggle.querySelector('i');
+        if (icon) {
+            icon.className = isLight ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+        localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        showToast(`${isLight ? 'Light' : 'Dark'} theme activated!`, 'success');
+    });
+}
+
+// Export visible updates list to a CSV download
+function exportToCSV() {
+    if (!state.filteredUpdates || state.filteredUpdates.length === 0) {
+        showToast('No releases to export!', 'error');
+        return;
+    }
+    
+    const headers = ['Title', 'Type', 'Season', 'Release Date', 'Status', 'Description', 'Link'];
+    const rows = state.filteredUpdates.map(item => [
+        item.title,
+        item.type,
+        item.season,
+        item.date,
+        item.status_label,
+        item.content_text,
+        item.link
+    ]);
+    
+    // Clean and escape CSV cells
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(val => `"${(val || '').replace(/"/g, '""').replace(/\r?\n|\r/g, ' ')}"`).join(','))
+    ].join('\n');
+    
+    try {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `dnd_releases_export_${new Date().toISOString().slice(0, 10)}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast('Exported CSV file successfully!', 'success');
+    } catch (err) {
+        console.error('CSV export error:', err);
+        showToast('Failed to export CSV file', 'error');
+    }
 }

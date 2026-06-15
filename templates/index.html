@@ -29,6 +29,9 @@
             </div>
             
             <div class="header-actions">
+                <button class="btn btn-secondary btn-icon theme-toggle" id="theme-toggle" aria-label="Toggle Light/Dark Theme" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
                 <div class="status-badge" id="last-updated-badge">
                     <span class="status-dot green"></span>
                     <span class="status-text">Loading catalog...</span>
@@ -74,12 +77,18 @@
                             </button>
                         </div>
 
-                        <div class="sort-box">
-                            <label for="sort-select" class="sr-only">Sort Order</label>
-                            <select id="sort-select" aria-label="Sort releases">
-                                <option value="latest">Release Date (Newest)</option>
-                                <option value="oldest">Release Date (Oldest)</option>
-                            </select>
+                        <div class="actions-group">
+                            <div class="sort-box">
+                                <label for="sort-select" class="sr-only">Sort Order</label>
+                                <select id="sort-select" aria-label="Sort releases">
+                                    <option value="latest">Release Date (Newest)</option>
+                                    <option value="oldest">Release Date (Oldest)</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" id="btn-export-csv" aria-label="Export Visible Releases to CSV" title="Export current list to CSV">
+                                <i class="fa-solid fa-file-csv"></i>
+                                <span>Export CSV</span>
+                            </button>
                         </div>
                     </div>
                 </div>

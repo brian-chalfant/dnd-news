@@ -11,8 +11,11 @@ An interactive, premium dashboard application built with **Python Flask** and **
 1. **WotC Release Roadmap**: Curated schedule of all key 2025/2026 rulebooks, campaign sourcebooks, accessories, and adventure modules.
 2. **Dynamic Countdown Calculator**: Automatically calculates release status tags relative to the system date (e.g., *Releasing tomorrow!*, *Releasing in 3 months*, or *Released on [Date]*).
 3. **Live EN World News Scraper**: Integrated RSS feed reader that downloads and parses community topics, filtering specifically for WotC, D&D Beyond updates, book pre-orders, and announcements.
-4. **Dark Fantasy Glassmorphic UI**: High-fidelity theme featuring crimson and dragon-fire orange gradients, glowing category badges, hover transitions, and skeleton loaders.
-5. **RPG Tweet Composer Drawer**:
+4. **Dark/Light Mode Theme Swapper**: A button in the header that toggles the color scheme between dark and light modes by overriding CSS root variables, persisting the user's preference in `localStorage`.
+5. **Card & Grid Utilities**:
+   * **Copy to Clipboard**: A one-click copy button on each card that copies the plaintext description of that specific release (isolated to prevent opening the sidebar).
+   * **CSV Export**: An export button in the filter bar that outputs the currently filtered/sorted grid list directly to a downloadable CSV file.
+6. **RPG Tweet Composer Drawer**:
    * **Thematic Style presets**: Draft messages using *Hype Bard* (pro), *Casual Player* (enthusiastic), or *Short Scroll* (minimal) layout structures.
    * **RPG Emojis**: Auto-injects class-themed emojis (`🎲`, `🐉`, `📜`, `⚔️`, `✨`) matching the product category.
    * **Twitter Character Count Safety**: Substitutes out links for a flat 23-character count (per Twitter's link policy) to prevent draft overflow.
